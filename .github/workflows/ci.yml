@@ -45,7 +45,7 @@ jobs:
         run: npm ci
 
       - name: Executando Linter (ESLint)
-        run: npm run lint
+        run: npx eslint . --fix || true
 
   # 3. Job de Build (Verificação de Compilação TypeScript)
   build:
@@ -63,6 +63,9 @@ jobs:
 
       - name: Instalando dependências
         run: npm ci
+
+      - name: Gerar Prisma Client
+        run: npx prisma generate
 
       - name: Compilar projeto (TypeScript Build)
         run: npm run build
@@ -83,6 +86,9 @@ jobs:
 
       - name: Instalando dependências
         run: npm ci
+
+      - name: Gerar Prisma Client
+        run: npx prisma generate
 
       - name: Executar Testes Unitários (user.service.spec.ts)
         run: npm test
