@@ -1,0 +1,88 @@
+name: Pipeline CI - FAP DevOps
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  # 1. Job de SAST (Análise de Segurança Estática)
+  sast:
+    name: SAST & Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Instalando dependências
+        run: npm ci
+
+      - name: Auditoria de Segurança de Pacotes (NPM Audit)
+        run: npm audit --audit-level=high
+
+  # 2. Job de Linting & Qualidade
+  lint:
+    name: Lint & Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Instalando dependências
+        run: npm ci
+
+      - name: Executando Linter (ESLint)
+        run: npm run lint
+
+  # 3. Job de Build (Verificação de Compilação TypeScript)
+  build:
+    name: Build & TypeScript Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Instalando dependências
+        run: npm ci
+
+      - name: Compilar projeto (TypeScript Build)
+        run: npm run build
+
+  # 4. Job de Testes Unitários (Jest)
+  tests:
+    name: Unit Tests (Jest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Instalando dependências
+        run: npm ci
+
+      - name: Executar Testes Unitários (user.service.spec.ts)
+        run: npm test
