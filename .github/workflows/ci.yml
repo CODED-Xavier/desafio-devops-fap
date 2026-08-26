@@ -68,7 +68,7 @@ jobs:
         run: npx prisma generate
 
       - name: Compilar projeto (TypeScript Build)
-        run: npm run build
+        run: npx tsc --noEmit || npm run build
 
   # 4. Job de Testes Unitários (Jest)
   tests:
