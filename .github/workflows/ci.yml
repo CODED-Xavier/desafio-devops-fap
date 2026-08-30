@@ -91,6 +91,7 @@ jobs:
         run: npx prisma generate
 
       - name: Executar Testes Unitários (user.service.spec.ts)
+
         run: npm test
 
 # 5. Job de CD (Deploy Automático)
