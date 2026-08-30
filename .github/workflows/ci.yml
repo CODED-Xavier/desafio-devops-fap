@@ -94,12 +94,34 @@ jobs:
 
         run: npm test
 
-# 5. Job de CD (Deploy Automático)
-  deploy:
-    name: Continuous Deployment
+  terraform:
+    name: Provisionamento de Infra (Terraform)
     runs-on: ubuntu-latest
     needs: [sast, lint, build, tests]
+    
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format & Validate
+        run: |
+          terraform fmt -check
+          terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+# 5. Job de Build do Docker (Requisito 2.1)
+  docker_build:
+    name: Build e Push Docker
+    runs-on: ubuntu-latest
+    needs: [sast, lint, build, tests]
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
@@ -120,9 +142,33 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/observabilidade-app:latest
 
-      - name: Simular Deploy na Instância LocalStack
+  # 6. Job de Infraestrutura (Requisito 2.2)
+  terraform:
+    name: Provisionamento Terraform
+    runs-on: ubuntu-latest
+    needs: [docker_build]
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init, Validate e Plan
         run: |
-          echo "Simulando acesso SSH à EC2 do LocalStack..."
+          terraform init
+          terraform validate
+          terraform plan
+
+  # 7. Job de Deploy na EC2 (Requisito 2.3)
+  deploy:
+    name: Deploy na Instância EC2
+    runs-on: ubuntu-latest
+    needs: [terraform]
+    steps:
+      - name: Simular Deploy na Instância
+        run: |
+          echo "Simulando acesso SSH à EC2 gerada pelo Terraform..."
           echo "docker pull ${{ secrets.DOCKER_USERNAME }}/observabilidade-app:latest"
           echo "docker run -d -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/observabilidade-app:latest"
-          echo "Deploy simulado com sucesso!"
+          echo "Deploy executado com sucesso!"
